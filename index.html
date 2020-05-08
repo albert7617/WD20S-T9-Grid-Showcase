@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" integrity="sha256-h20CPZ0QyXlBuAw7A+KluUYx/3pK+c7lYEpqLTlxjYQ=" crossorigin="anonymous" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.1.0/papaparse.min.js" integrity="sha256-Fh801SO9gqegfUdkDxyzXzIUPWzO/Vatqj8uN+5xcL4=" crossorigin="anonymous"></script>
+</head>
+<style>
+.grid-layout {
+  width: 80%;
+  margin: 0 auto;
+  display: grid;
+  /*
+  Setting the column of the grid container, for example:
+    grid-template-columns: 100px 100px 100px 100px;       
+      implies that grid container contain four  columns each with width of 100px;
+    grid-template-columns: 1fr 1fr 1fr;                   
+      implies that grid container contain three columns each takes up a third of width of grid container;
+    grid-template-columns: repeat(5, 1fr);                
+      implies that grid container contain five  columns each takes up a fifth of width of grid container;
+    grid-template-columns: repeat(6, minmax(180px, 1fr)); 
+      implies that grid container contain six   columns each takes up minimum width of 180px and at most a sizth of width of grid container;
+  For more information: https://developer.mozilla.org/en-US/docs/Glossary/Grid_Column
+  repeat(a, b) stands for repeat length of b for a time.
+  For more information: https://developer.mozilla.org/en-US/docs/Web/CSS/repeat
+  minmax(a, b) defines a size range from a and b.
+  For more information: https://developer.mozilla.org/en-US/docs/Web/CSS/minmax
+  */
+  grid-template-columns: repeat(5, minmax(200px, 1fr));
+  /*
+  Setting the gap between each cell in grid container
+  */
+  grid-gap: 10px;
+  /*
+  Setting the row component of grid container, here each row has a minimum height of 180px
+  and a maximum height of auto (depend by content in each row).
+  */
+  grid-auto-rows: 180px;
+  /*
+  Setting the CSS algroithm to fill the grid container, 
+  setting it to dense prevent void in container but it may messes with item order.
+  */
+  grid-auto-flow: dense;
+  padding: 10px;
+}
+
+.grid-item {
+  padding: 10px;
+  color: #FFFFFF;
+  background-color: #333;
+  border-radius: 5px;
+}
+
+.grid-item:nth-child(2n) {
+  background-color: #424242;
+}
+
+.img-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.img-container>img {
+  height: 120px;
+  width: auto;
+}
+
+.comment-container {
+  display: none;
+}
+
+.title {
+  font-size: 30px;
+  height: 40px;
+}
+
+.grid-item p {
+  display: none;
+}
+
+.grid-item:nth-child(1)>.description-container, .grid-item:nth-child(2)>.description-container, .grid-item:nth-child(3)>.description-container {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.grid-item:nth-child(1) p, .grid-item:nth-child(2) p, .grid-item:nth-child(3) p {
+  margin-top: 5px;
+  overflow-y: auto;
+  display: block;
+}
+
+.grid-item:nth-child(1) .comment-container, .grid-item:nth-child(2) .comment-container, .grid-item:nth-child(3) .comment-container {
+  margin-top: 5px;
+  display: block;
+}
+
+.text-container {
+  text-align: center;
+}
+
+.grid-item:nth-child(1) .text-container, .grid-item:nth-child(2) .text-container, .grid-item:nth-child(3) .text-container {
+  padding: 0 10px;
+}
+
+.fa-heart {
+  color: red;
+}
+
+.grid-item:nth-child(1) {
+  grid-column-end: span 3;
+  grid-row-end: span 2;
+}
+
+.grid-item:nth-child(2), .grid-item:nth-child(3) {
+  grid-column-end: span 2;
+}
+
+
+.grid-item:nth-child(1) img {
+  /*
+  height: 180px * 2 - 20px - 20px
+  height: total height - padding - comment height
+  */
+  height: 320px;
+  width: auto;
+}
+
+.grid-item:nth-child(2) img, .grid-item:nth-child(3) img {
+  height: 140px;
+  width: auto;
+}
+
+.grid-item:nth-child(1) .text-container {
+  max-height: 320px;
+}
+
+.grid-item:nth-child(2) .text-container, .grid-item:nth-child(3) .text-container {
+  max-height: 140px;
+}
+
+.grid-item:nth-child(1) p {
+  max-height: 280px;
+}
+
+.grid-item:nth-child(2) p, .grid-item:nth-child(3) p {
+  max-height: 100px;
+}
+
+</style>
+<body>
+  <div class="grid-layout" id="dish-container">
+    
+  </div>
+</body>
+<script>
+$(document).ready(function() {
+  Papa.parse('https://docs.google.com/spreadsheets/d/1xVExK0lukAPi-_fMNJloKYaYaHoMmxfizLKB4QpxFJk/export?format=csv&gid=781426841', {
+    download: true,
+    header: true,
+    complete: function(results) {
+      console.log(results);
+      var content = "";
+      for (var i = 0; i < results.data.length; i++) {
+        content +=  `<div class="grid-item">
+                      <div class="description-container">
+                        <div class="text-container">
+                          <span class="title">${results.data[i].dish_name}</span>
+                          <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Veniam, ipsam nostrum, modi labore doloribus error perferendis dolore ducimus quia, facilis rem, eos iste expedita laboriosam mollitia delectus vitae dicta voluptates?</p>
+                        </div>
+                        <div class="img-container">
+                          <img src="${results.data[i].dish_img}" alt="dish">
+                        </div>
+                      </div>
+                      <div class="comment-container">
+                        <i class="fas fa-heart"></i>
+                        <span>520 likes &nbsp;</span>
+                        <i class="fas fa-comment-alt"></i>
+                        <span>999+ comments</span>
+                      </div>
+                    </div>`;
+      }
+      $('#dish-container').html(content);
+    }
+  });
+});
+</script>
+</html>
